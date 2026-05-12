@@ -1,0 +1,1029 @@
+// import { useEffect, useMemo, useState } from "react";
+// import { useDispatch, useSelector } from "react-redux";
+// import AddStudent from "../../components/modal/AddStudent";
+// import {
+//   createStudent,
+//   deleteStudent,
+//   getAllUsers,
+//   updateStudent,
+// } from "../../store/slices/adminSlice";
+// import {
+//   AlertTriangle,
+//   CheckCircle,
+//   Plus,
+//   TriangleAlert,
+//   Users,
+//   X,
+// } from "lucide-react";
+// import { toggleStudentModal } from "../../store/slices/popupSlice";
+
+// const ManageStudents = () => {
+//   const { users, projects } = useSelector((state) => state.admin);
+//   const { isCreateStudentModalOpen } = useSelector((state) => state.popup);
+//   const [showModal, setShowModal] = useState(false);
+//   const [editingStudent, setEditingStudent] = useState(null);
+//   const [searchTerm, setSearchTerm] = useState("");
+//   const [filterDepartment, setFilterDepartment] = useState("all");
+//   const [showDeleteModal, setShowDeleteModal] = useState(false);
+//   const [studentToDelete, setStudentToDelete] = useState(null);
+
+//   const [formData, setFormData] = useState({
+//     name: "",
+//     email: "",
+//     department: "",
+//   });
+
+//   const dispatch = useDispatch();
+
+//   const students = useMemo(() => {
+//     const studentUsers = (users || []).filter(
+//       (u) => u.role?.toLowerCase() === "student",
+//     );
+
+//     // Enhance students with project information
+//     return studentUsers.map((student) => {
+//       const studentProject = (projects || []).find(
+//         (p) => p.student === student._id,
+//       );
+//       return {
+//         ...student,
+//         projectTitle: studentProject?.title || null,
+//         supervisor: studentProject?.supervisor || null,
+//         projectStatus: studentProject?.status || null,
+//       };
+//     });
+//   }, [users, projects]);
+
+//   const departments = useMemo(() => {
+//     const set = new Set(
+//       (students || []).map((s) => s.department).filter(Boolean),
+//     );
+//     return Array.from(set);
+//   }, [students]);
+
+//   const filteredStudents = students.filter((student) => {
+//     const matchesSearch =
+//       (student.name || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+//       (student.email || "").toLowerCase().includes(searchTerm.toLowerCase());
+//     const matchesFilter =
+//       filterDepartment === "all" || student.department === filterDepartment;
+//     return matchesSearch && matchesFilter;
+//   });
+
+//   const handleCloseModal = () => {
+//     setShowModal(false);
+//     setEditingStudent(null);
+//     setFormData({
+//       name: "",
+//       email: "",
+//       department: "",
+//     });
+//   };
+
+//   const handleSubmit = (e) => {
+//     e.preventDefault();
+
+//     if (editingStudent) {
+//       dispatch(updateStudent({ id: editingStudent._id, data: formData }));
+//     } else {
+//       dispatch(createStudent(formData));
+//     }
+//     handleCloseModal();
+//   };
+
+//   const handleEdit = (student) => {
+//     setEditingStudent(student);
+//     setFormData({
+//       name: student.name,
+//       email: student.email,
+//       department: student.department,
+//     });
+//     setShowModal(true);
+//   };
+
+//   const handleDelete = (student) => {
+//     setStudentToDelete(student);
+//     setShowDeleteModal(true);
+//   };
+
+//   const confirmDelete = () => {
+//     if (studentToDelete) {
+//       dispatch(deleteStudent(studentToDelete._id));
+//       setShowDeleteModal(false);
+//       setStudentToDelete(null);
+//     }
+//   };
+
+//   const cancelDelete = () => {
+//     setShowDeleteModal(false);
+//     setStudentToDelete(null);
+//   };
+
+//   return (
+//     <>
+//       <div className="space-y-6">
+//         {/* HEADER */}
+//         <div className="card">
+//           <div className="card-header flex flex-col md:flex-row justify-between items-start md:items-center">
+//             <div>
+//               <h1 className="card-title">Manage Students</h1>
+//               <p className="card-subtitle">
+//                 Add, edit and manage student accounts
+//               </p>
+//             </div>
+//             <button
+//               onClick={() => dispatch(toggleStudentModal())}
+//               className="btn-primary flex items-center space-x-2 mt-4 md:mt-0"
+//             >
+//               <Plus className="w-5 h-5" />
+//               <span>Add New Student</span>
+//             </button>
+//           </div>
+//         </div>
+
+//         {/* STATS CARD */}
+//         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+//           <div className="card">
+//             <div className="flex items-center">
+//               <div className="p-3 bg-blue-100 rounded-lg">
+//                 <Users className="w-6 h-6 text-blue-600" />
+//               </div>
+//               <div className="ml-4">
+//                 <p className="text-sm font-medium text-slate-600 ">
+//                   Total Students
+//                 </p>
+//                 <p className="text-lg font-semibold text-slate-800">
+//                   {students.length}
+//                 </p>
+//               </div>
+//             </div>
+//           </div>
+
+//           <div className="card">
+//             <div className="flex items-center">
+//               <div className="p-3 bg-blue-100 rounded-lg">
+//                 <CheckCircle className="w-6 h-6 text-purple-600" />
+//               </div>
+//               <div className="ml-4">
+//                 <p className="text-sm font-medium text-slate-600 ">
+//                   Completed Projects
+//                 </p>
+//                 <p className="text-lg font-semibold text-slate-800">
+//                   {students.filter((s) => s.status === "completed").length}
+//                 </p>
+//               </div>
+//             </div>
+//           </div>
+
+//           <div className="card">
+//             <div className="flex items-center">
+//               <div className="p-3 bg-blue-100 rounded-lg">
+//                 <TriangleAlert className="w-6 h-6 text-yellow-600" />
+//               </div>
+//               <div className="ml-4">
+//                 <p className="text-sm font-medium text-slate-600 ">
+//                   Unassigned
+//                 </p>
+//                 <p className="text-lg font-semibold text-slate-800">
+//                   {students.filter((s) => !s.supervisor).length}
+//                 </p>
+//               </div>
+//             </div>
+//           </div>
+//         </div>
+
+//         {/* FILTERS */}
+//         <div className="card">
+//           <div className="flex flex-col md:flex-row gap-4">
+//             <div className="flex-1">
+//               <label className="block text-sm font-medium text-slate-700 mb-2">
+//                 Search Students
+//               </label>
+//               <input
+//                 type="text"
+//                 placeholder="Search by name or email..."
+//                 className="input-field w-full"
+//                 value={searchTerm}
+//                 onChange={(e) => setSearchTerm(e.target.value)}
+//               />
+//             </div>
+//             <div>
+//               <label className="block text-sm font-medium text-slate-700 mb-2">
+//                 Filter Status
+//               </label>
+//               <select
+//                 className="input-field w-full"
+//                 value={filterDepartment}
+//                 onChange={(e) => setFilterDepartment(e.target.value)}
+//               >
+//                 <option value="all">All Departments</option>
+//                 {departments.map((dept) => (
+//                   <option value={dept} key={dept}>
+//                     {dept}
+//                   </option>
+//                 ))}
+//               </select>
+//             </div>
+//           </div>
+//         </div>
+
+//         {/* STUDENTS TABLE */}
+//         <div className="card">
+//           <div className="card-header">
+//             <h2 className="card-title">Students List</h2>
+//           </div>
+//           <div className="overflow-x-auto">
+//             {filteredStudents && filteredStudents.length > 0 ? (
+//               <table className="w-full">
+//                 <thead className="bg-slate-50">
+//                   <tr>
+//                     <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wide">
+//                       Student Info
+//                     </th>
+//                     <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wide">
+//                       Department & Year
+//                     </th>
+//                     <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wide">
+//                       Supervisor
+//                     </th>
+//                     <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wide">
+//                       Project Title
+//                     </th>
+//                     <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wide">
+//                       Actions
+//                     </th>
+//                   </tr>
+//                 </thead>
+
+//                 <tbody className="bg-white divide-y divide-slate-200">
+//                   {filteredStudents.map((student) => {
+//                     return (
+//                       <tr key={student._id} className="hover:bg-slate-50">
+//                         <td>
+//                           <div>
+//                             <div className="text-sm font-medium text-slate-900">
+//                               {student.name}
+//                             </div>
+//                             <div className="text-sm text-slate-500">
+//                               {student.email}
+//                             </div>
+//                           </div>
+//                         </td>
+
+//                         <td className="px-6 py-4 whitespace-nowrap">
+//                           <div className="text-sm text-slate-900">
+//                             {student.department || "-"}
+//                           </div>
+//                           <div className="text-sm text-slate-500">
+//                             {student.createdAt
+//                               ? new Date(student.createdAt).getFullYear()
+//                               : "-"}
+//                           </div>
+//                         </td>
+
+//                         <td className="px-6 py-4 whitespace-nowrap">
+//                           {student.supervisor ? (
+//                             <span
+//                               className="inline-flex items-center px-2 py-0.5 rounded-full
+//                             text-green-800 bg-gray-100 text-xs font-medium"
+//                             >
+//                               {
+//                                 users?.find(
+//                                   (u) => u._id === student?.supervisor,
+//                                 )?.name
+//                               }
+//                             </span>
+//                           ) : (
+//                             <span
+//                               className="inline-flex items-center px-2 py-0.5 rounded-full
+//                             text-red-800 bg-red-100 text-xs font-medium"
+//                             >
+//                               {student.projectStatus === "rejected"
+//                                 ? "Rejected"
+//                                 : "Not Assigned"}
+//                             </span>
+//                           )}
+//                         </td>
+
+//                         <td className="px-6 py-4">
+//                           <div className="text-sm text-slate-900">
+//                             {student.projectTitle}
+//                           </div>
+//                         </td>
+
+//                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+//                           <div className="flex space-x-2">
+//                             <button
+//                               onClick={() => handleEdit(student)}
+//                               className="text-blue-600 hover:text-blue-900"
+//                             >
+//                               Edit
+//                             </button>
+//                             <button
+//                               onClick={() => handleDelete(student)}
+//                               className="text-red-600 hover:text-red-900"
+//                             >
+//                               Delete
+//                             </button>
+//                           </div>
+//                         </td>
+//                       </tr>
+//                     );
+//                   })}
+//                 </tbody>
+//               </table>
+//             ) : (
+//               filteredStudents.length === 0 && (
+//                 <div className="text-center py-8 text-slate-500">
+//                   No students found matching your criteria.
+//                 </div>
+//               )
+//             )}
+//           </div>
+
+//           {/* EDIT STUDENT MODEL */}
+//           {showModal && (
+//             <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+//               <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
+//                 <div className="flex justify-between items-center mb-4">
+//                   <h3 className="text-lg font-semibold text-slate-900">
+//                     Edit Student
+//                   </h3>
+
+//                   <button
+//                     onClick={handleCloseModal}
+//                     className="text-slate-400 hover:to-slate-600"
+//                   >
+//                     <X className="w-6 h-6" />
+//                   </button>
+//                 </div>
+
+//                 <form onSubmit={handleSubmit} className="space-y-6">
+//                   <div>
+//                     <label className="block text-sm font-medium text-slate-700 mb-1">
+//                       Full Name
+//                     </label>
+//                     <input
+//                       type="text"
+//                       required
+//                       value={formData.name}
+//                       onChange={(e) =>
+//                         setFormData({ ...formData, name: e.target.value })
+//                       }
+//                       className="input-field w-full py-1 border-b border-slate-600 focus: outline-none"
+//                     />
+//                   </div>
+
+//                   <div>
+//                     <label className="block text-sm font-medium text-slate-700 mb-1">
+//                       Email
+//                     </label>
+//                     <input
+//                       type="email"
+//                       required
+//                       value={formData.email}
+//                       onChange={(e) =>
+//                         setFormData({ ...formData, email: e.target.value })
+//                       }
+//                       className="input-field w-full py-1 border-b border-slate-600 focus: outline-none"
+//                     />
+//                   </div>
+
+//                   <div>
+//                     <label className="block text-sm font-medium text-slate-700 mb-1">
+//                       Department
+//                     </label>
+
+//                     <select
+//                       className="input-field w-full py-1 border-b border-slate-600 focus: outline-none"
+//                       required
+//                       value={formData.department}
+//                       onChange={(e) =>
+//                         setFormData({ ...formData, department: e.target.value })
+//                       }
+//                     >
+//                       <option value="Computer Science">Computer Science</option>
+//                       <option value="Software Engineering">
+//                         Software Engineering
+//                       </option>
+//                       <option value="Information Technology">
+//                         Information Technology
+//                       </option>
+//                       <option value="Data Science">Data Science</option>
+//                       <option value="Electrical Engineering">
+//                         Electrical Engineering
+//                       </option>
+//                       <option value="Mechanical Engineering">
+//                         Mechanical Engineering
+//                       </option>
+//                       <option value="Civil Engineering">
+//                         Civil Engineering
+//                       </option>
+//                       <option value="Business Administration">
+//                         Business Administration
+//                       </option>
+//                       <option value="Economics">Economics</option>
+//                       <option value="Psychology">Psychology</option>
+//                     </select>
+//                   </div>
+
+//                   <div className="flex justify-end space-x-3 pt-4">
+//                     <button
+//                       type="button"
+//                       onClick={handleCloseModal}
+//                       className="btn-danger"
+//                     >
+//                       Cancel
+//                     </button>
+//                     <button type="submit" className="btn-primary">
+//                       Update Student
+//                     </button>
+//                   </div>
+//                 </form>
+//               </div>
+//             </div>
+//           )}
+
+//           {showDeleteModal && studentToDelete && (
+//             <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+//               <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4 shadow-xl">
+//                 <div className="flex items-center mb-4">
+//                   <div className="flex-shrink-0 w-10 h-10 mx-auto flex items-center justify-center rounded-full bg-red-100">
+//                     <AlertTriangle className="w-6 h-6 text-red-600" />
+//                   </div>
+//                 </div>
+
+//                 <div className="text-center">
+//                   <h3 className="text-lg font-medium text-slate-900 mb-2">
+//                     Delete Student
+//                   </h3>
+
+//                   <p className="text-sm text-slate-500 mb-4">
+//                     Are you sure you want to delete{" "}
+//                     <span>
+//                       {studentToDelete.name} ? This action cannot be undone.
+//                     </span>
+//                   </p>
+
+//                   <div className="flex justify-center space-x-3">
+//                     <button onClick={cancelDelete} className="btn-secondary">
+//                       Cancel
+//                     </button>
+//                     <button onClick={confirmDelete} className="btn-danger">
+//                       Delete
+//                     </button>
+//                   </div>
+//                 </div>
+//               </div>
+//             </div>
+//           )}
+
+//           {isCreateStudentModalOpen && <AddStudent />}
+//         </div>
+//       </div>
+//     </>
+//   );
+// };
+
+// export default ManageStudents;
+
+import { useEffect, useMemo, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import AddStudent from "../../components/modal/AddStudent";
+
+import {
+  createStudent,
+  deleteStudent,
+  getAllUsers,
+  updateStudent,
+} from "../../store/slices/adminSlice";
+
+import { toggleStudentModal } from "../../store/slices/popupSlice";
+
+import {
+  AlertTriangle,
+  CheckCircle2,
+  GraduationCap,
+  Pencil,
+  Plus,
+  Trash2,
+  UserRoundCheck,
+  Users,
+  X,
+} from "lucide-react";
+
+const ManageStudents = () => {
+  const dispatch = useDispatch();
+
+  const { users, projects } = useSelector((state) => state.admin);
+
+  const { isCreateStudentModalOpen } = useSelector((state) => state.popup);
+
+  const [showModal, setShowModal] = useState(false);
+  const [editingStudent, setEditingStudent] = useState(null);
+
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterDepartment, setFilterDepartment] = useState("all");
+
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [studentToDelete, setStudentToDelete] = useState(null);
+
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    department: "",
+  });
+
+  useEffect(() => {
+    dispatch(getAllUsers());
+  }, [dispatch]);
+
+  const students = useMemo(() => {
+    const studentUsers = (users || []).filter(
+      (u) => u.role?.toLowerCase() === "student",
+    );
+
+    return studentUsers.map((student) => {
+      const studentProject = (projects || []).find((p) => {
+        const projectStudentId =
+          typeof p.student === "object" ? p.student?._id : p.student;
+
+        return projectStudentId === student._id;
+      });
+
+      return {
+        ...student,
+        projectTitle:
+          studentProject?.title ||
+          studentProject?.projectTitle ||
+          "No Project Assigned",
+
+        supervisor:
+          typeof studentProject?.supervisor === "object"
+            ? studentProject?.supervisor
+            : users?.find((u) => u._id === studentProject?.supervisor),
+
+        projectStatus: studentProject?.status || "pending",
+      };
+    });
+  }, [users, projects]);
+
+  const departments = useMemo(() => {
+    const set = new Set(students.map((s) => s.department).filter(Boolean));
+
+    return Array.from(set);
+  }, [students]);
+
+  const filteredStudents = students.filter((student) => {
+    const matchesSearch =
+      student.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      student.email?.toLowerCase().includes(searchTerm.toLowerCase());
+
+    const matchesFilter =
+      filterDepartment === "all" || student.department === filterDepartment;
+
+    return matchesSearch && matchesFilter;
+  });
+
+  const handleCloseModal = () => {
+    setShowModal(false);
+    setEditingStudent(null);
+
+    setFormData({
+      name: "",
+      email: "",
+      department: "",
+    });
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+
+    if (editingStudent) {
+      dispatch(
+        updateStudent({
+          id: editingStudent._id,
+          data: formData,
+        }),
+      );
+    } else {
+      dispatch(createStudent(formData));
+    }
+
+    handleCloseModal();
+  };
+
+  const handleEdit = (student) => {
+    setEditingStudent(student);
+
+    setFormData({
+      name: student.name || "",
+      email: student.email || "",
+      department: student.department || "",
+    });
+
+    setShowModal(true);
+  };
+
+  const handleDelete = (student) => {
+    setStudentToDelete(student);
+    setShowDeleteModal(true);
+  };
+
+  const confirmDelete = () => {
+    if (studentToDelete) {
+      dispatch(deleteStudent(studentToDelete._id));
+    }
+
+    setShowDeleteModal(false);
+    setStudentToDelete(null);
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* HEADER */}
+      <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-5">
+          <div>
+            <h1 className="text-2xl font-bold text-slate-800">
+              Manage Students
+            </h1>
+
+            <p className="text-slate-500 mt-1">
+              Manage student accounts, supervisors and projects
+            </p>
+          </div>
+
+          <button
+            onClick={() => dispatch(toggleStudentModal())}
+            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-5 py-3 rounded-xl transition-all duration-200 shadow-sm"
+          >
+            <Plus size={18} />
+            Add Student
+          </button>
+        </div>
+      </div>
+
+      {/* STATS */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+        <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
+          <div className="flex items-center gap-4">
+            <div className="p-3 rounded-xl bg-slate-100">
+              <Users className="text-slate-700" />
+            </div>
+
+            <div>
+              <p className="text-sm text-slate-500">Total Students</p>
+
+              <h2 className="text-2xl font-bold text-slate-800">
+                {students.length}
+              </h2>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
+          <div className="flex items-center gap-4">
+            <div className="p-3 rounded-xl bg-green-100">
+              <CheckCircle2 className="text-green-700" />
+            </div>
+
+            <div>
+              <p className="text-sm text-slate-500">Completed Projects</p>
+
+              <h2 className="text-2xl font-bold text-slate-800">
+                {students.filter((s) => s.projectStatus === "completed").length}
+              </h2>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
+          <div className="flex items-center gap-4">
+            <div className="p-3 rounded-xl bg-yellow-100">
+              <UserRoundCheck className="text-yellow-700" />
+            </div>
+
+            <div>
+              <p className="text-sm text-slate-500">Unassigned Students</p>
+
+              <h2 className="text-2xl font-bold text-slate-800">
+                {students.filter((s) => !s.supervisor).length}
+              </h2>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* FILTERS */}
+      <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          <div>
+            <label className="block text-sm font-medium text-slate-600 mb-2">
+              Search Students
+            </label>
+
+            <input
+              type="text"
+              placeholder="Search by name or email..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full border border-slate-300 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-slate-300"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-slate-600 mb-2">
+              Department
+            </label>
+
+            <select
+              value={filterDepartment}
+              onChange={(e) => setFilterDepartment(e.target.value)}
+              className="w-full border border-slate-300 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-slate-300"
+            >
+              <option value="all">All Departments</option>
+
+              {departments.map((dept) => (
+                <option key={dept} value={dept}>
+                  {dept}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+      </div>
+
+      {/* TABLE */}
+      <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
+        <div className="p-5 border-b border-slate-200">
+          <h2 className="text-lg font-semibold text-slate-800">
+            Students List
+          </h2>
+        </div>
+
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead className="bg-slate-50">
+              <tr>
+                {[
+                  "Student",
+                  "Department",
+                  "Supervisor",
+                  "Project Title",
+                  "Actions",
+                ].map((head) => (
+                  <th
+                    key={head}
+                    className="px-6 py-4 text-left text-xs font-semibold text-slate-500 uppercase"
+                  >
+                    {head}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+
+            <tbody>
+              {filteredStudents.length > 0 ? (
+                filteredStudents.map((student) => (
+                  <tr
+                    key={student._id}
+                    className="border-t border-slate-100 hover:bg-slate-50 transition"
+                  >
+                    <td className="px-6 py-5">
+                      <div>
+                        <h3 className="font-semibold text-slate-800">
+                          {student.name}
+                        </h3>
+
+                        <p className="text-sm text-slate-500">
+                          {student.email}
+                        </p>
+                      </div>
+                    </td>
+
+                    <td className="px-6 py-5">
+                      <div className="flex items-center gap-2">
+                        <GraduationCap size={16} className="text-slate-500" />
+
+                        <span className="text-slate-700">
+                          {student.department || "-"}
+                        </span>
+                      </div>
+                    </td>
+
+                    <td className="px-6 py-5">
+                      {student.supervisor ? (
+                        <span className="inline-flex items-center px-3 py-1 rounded-full bg-green-100 text-green-700 text-sm font-medium">
+                          {student.supervisor?.name}
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center px-3 py-1 rounded-full bg-red-100 text-red-700 text-sm font-medium">
+                          Not Assigned
+                        </span>
+                      )}
+                    </td>
+
+                    <td className="px-6 py-5 max-w-[250px]">
+                      <p className="text-slate-700 text-sm">
+                        {student.projectTitle}
+                      </p>
+                    </td>
+
+                    <td className="px-6 py-5">
+                      <div className="flex items-center gap-3">
+                        <button
+                          onClick={() => handleEdit(student)}
+                          className="flex items-center gap-1 text-blue-600 hover:text-blue-800 transition"
+                        >
+                          <Pencil size={16} />
+                          Edit
+                        </button>
+
+                        <button
+                          onClick={() => handleDelete(student)}
+                          className="flex items-center gap-1 text-red-600 hover:text-red-800 transition"
+                        >
+                          <Trash2 size={16} />
+                          Delete
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan={5} className="text-center py-10 text-slate-500">
+                    No students found
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* EDIT MODAL */}
+      {showModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white w-full max-w-md rounded-2xl p-6 shadow-2xl">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-semibold text-slate-800">
+                Edit Student
+              </h2>
+
+              <button
+                onClick={handleCloseModal}
+                className="text-slate-500 hover:text-slate-700"
+              >
+                <X />
+              </button>
+            </div>
+
+            <form onSubmit={handleSubmit} className="space-y-5">
+              <div>
+                <label className="block text-sm font-medium text-slate-600 mb-2">
+                  Full Name
+                </label>
+
+                <input
+                  type="text"
+                  required
+                  value={formData.name}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      name: e.target.value,
+                    })
+                  }
+                  className="w-full border border-slate-300 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-slate-300"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-slate-600 mb-2">
+                  Email
+                </label>
+
+                <input
+                  type="email"
+                  required
+                  value={formData.email}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      email: e.target.value,
+                    })
+                  }
+                  className="w-full border border-slate-300 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-slate-300"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-slate-600 mb-2">
+                  Department
+                </label>
+
+                <select
+                  required
+                  value={formData.department}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      department: e.target.value,
+                    })
+                  }
+                  className="w-full border border-slate-300 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-slate-300"
+                >
+                  <option value="Computer Science">Computer Science</option>
+
+                  <option value="Software Engineering">
+                    Software Engineering
+                  </option>
+
+                  <option value="Information Technology">
+                    Information Technology
+                  </option>
+
+                  <option value="Data Science">Data Science</option>
+
+                  <option value="Electrical Engineering">
+                    Electrical Engineering
+                  </option>
+
+                  <option value="Mechanical Engineering">
+                    Mechanical Engineering
+                  </option>
+
+                  <option value="Civil Engineering">Civil Engineering</option>
+                </select>
+              </div>
+
+              <div className="flex justify-end gap-3 pt-3">
+                <button
+                  type="button"
+                  onClick={handleCloseModal}
+                  className="px-5 py-2.5 rounded-xl border border-slate-300 text-slate-700 hover:bg-slate-100"
+                >
+                  Cancel
+                </button>
+
+                <button
+                  type="submit"
+                  className="px-5 py-2.5 rounded-xl bg-blue-600 text-white hover:bg-blue-700"
+                >
+                  Update Student
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* DELETE MODAL */}
+      {showDeleteModal && studentToDelete && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl">
+            <div className="flex justify-center mb-4">
+              <div className="bg-red-100 p-3 rounded-full">
+                <AlertTriangle className="text-red-600" />
+              </div>
+            </div>
+
+            <h2 className="text-xl font-semibold text-center text-slate-800">
+              Delete Student
+            </h2>
+
+            <p className="text-slate-500 text-center mt-3">
+              Are you sure you want to delete{" "}
+              <span className="font-semibold text-slate-700">
+                {studentToDelete.name}
+              </span>
+              ?
+            </p>
+
+            <div className="flex justify-center gap-3 mt-6">
+              <button
+                onClick={() => setShowDeleteModal(false)}
+                className="px-5 py-2.5 border border-slate-300 rounded-xl hover:bg-slate-100"
+              >
+                Cancel
+              </button>
+
+              <button
+                onClick={confirmDelete}
+                className="px-5 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-xl"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {isCreateStudentModalOpen && <AddStudent />}
+    </div>
+  );
+};
+
+export default ManageStudents;
